@@ -7,7 +7,7 @@ Set board FEN\
 Moves history (navigate with arrows)\
 Legal moves highlighting\
 Square highlighting (red, green, yellow, blue)\
-Draw arrows\
+Draw arrows
 
 ## Preview
 ![Preview](/preview.png)
