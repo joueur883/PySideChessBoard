@@ -35,6 +35,8 @@ class GPiece(QGraphicsSvgItem):
 
         self.in_check = False
 
+        self.right_click = False
+
 
         self.drag_start_pos = QPointF(0, 0)
         self.pending_move = QPointF(0, 0)
@@ -87,7 +89,28 @@ class GPiece(QGraphicsSvgItem):
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
 
         if event.button() == Qt.MouseButton.RightButton:
-            match event.modifiers():
+            self.right_click = True
+            return
+
+        self.right_click = False
+
+        self.setZValue(3)
+
+        self.drag_start_pos = self.pos()
+        self.dragging = True
+
+        self.animateDragBgColorTo(QColor(0, 0, 0, 50))
+
+        self.mouse_position = event.screenPos()
+        self.centerOnMouseMove(event)
+
+        self.update()
+
+        return super().mousePressEvent(event)
+    
+    def addAnnotation(self, modifiers):
+        if self.right_click and self.hovering:
+            match modifiers:
 
                 case Qt.KeyboardModifier.NoModifier:
                     if self.annotation_color != 0:
@@ -104,25 +127,11 @@ class GPiece(QGraphicsSvgItem):
                 case Qt.KeyboardModifier.AltModifier:
                     self.annotation_color = 4
 
-            self.update()
-            return
-
-        self.setZValue(3)
-
-        self.drag_start_pos = self.pos()
-        self.dragging = True
-
-        self.animateDragBgColorTo(QColor(0, 0, 0, 50))
-
-        self.mouse_position = event.screenPos()
-        self.centerOnMouseMove(event)
-
-        self.update()
-
-        return super().mousePressEvent(event)
-    
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if not self.dragging:
+            if self.right_click:
+                QTimer.singleShot(0, lambda m=event.modifiers(): self.addAnnotation(m))
+            self.update()
             return
 
         self.setZValue(2)
@@ -147,9 +156,10 @@ class GPiece(QGraphicsSvgItem):
         self.update()
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
-        self.mouse_position = event.screenPos()
-        self.centerOnMouseMove(event)
 
+        if not self.right_click:
+            self.mouse_position = event.screenPos()
+            self.centerOnMouseMove(event)
 
         return super().mouseMoveEvent(event)
 

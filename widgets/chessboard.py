@@ -2,6 +2,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import QColor, QAction, QIcon, QKeyEvent
 from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, QSize, QTimer, Qt
 
+from widgets.arrow import GArrow
 from widgets.piece import GPiece
 from widgets.square import GSquare
 
@@ -42,6 +43,12 @@ class ChessBoard(QGraphicsView):
 
         self.moves_history = []
         self.timeline_pos = 0
+
+        self.arrow_start_pos = QPointF(0, 0)
+        self.arrow_end_pos = QPointF(0, 0)
+
+        self.arrows_pos = []
+        self.arrows_instances_dict: dict[str, GArrow] = {}
 
         self.board = chess.Board()
 
@@ -90,6 +97,51 @@ class ChessBoard(QGraphicsView):
         self.mouse_position = event.pos()
         return super().mouseMoveEvent(event)
     
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        if event.button() == Qt.MouseButton.RightButton:
+            mapped = self.mapToScene(event.pos())
+            self.arrow_start_pos = self.posToSquareCoord(int(mapped.x()), int(mapped.y()))
+
+        return super().mousePressEvent(event)
+    
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
+        if event.button() == Qt.MouseButton.RightButton:
+
+            mapped = self.mapToScene(event.pos())
+            
+            self.arrow_end_pos = self.posToSquareCoord(round(mapped.x()), round(mapped.y()))
+
+            if self.arrow_start_pos.strip() == "" or self.arrow_end_pos.strip() == "":
+                return
+            
+            if self.arrow_start_pos != self.arrow_end_pos:
+                if not f"{self.arrow_start_pos}{self.arrow_end_pos}" in self.arrows_pos:
+                    self.arrows_pos.append(f"{self.arrow_start_pos}{self.arrow_end_pos}")
+
+                    start_square_pos = self.square_instances_dict[self.arrow_start_pos].pos()
+                    end_square_pos = self.square_instances_dict[self.arrow_end_pos].pos()
+
+                    centered_sx = start_square_pos.x() + self.tile_size / 2
+                    centered_sy = start_square_pos.y() + self.tile_size / 2
+                    centered_ex = end_square_pos.x() + self.tile_size / 2
+                    centered_ey = end_square_pos.y() + self.tile_size / 2
+
+                    arrow = GArrow(QPointF(centered_sx, centered_sy), QPointF(centered_ex, centered_ey))
+                    self.arrows_instances_dict[f"{self.arrow_start_pos}{self.arrow_end_pos}"] = arrow
+
+                    self.gscene.addItem(arrow)
+                else:
+                    if f"{self.arrow_start_pos}{self.arrow_end_pos}" in self.arrows_instances_dict:
+                        instance = self.arrows_instances_dict[f"{self.arrow_start_pos}{self.arrow_end_pos}"]
+
+                        self.gscene.removeItem(instance)
+
+                        del self.arrows_instances_dict[f"{self.arrow_start_pos}{self.arrow_end_pos}"]
+                        self.arrows_pos.remove(f"{self.arrow_start_pos}{self.arrow_end_pos}")
+
+
+        return super().mouseReleaseEvent(event)
+    
     def keyPressEvent(self, event: QKeyEvent):
         
         key = event.key()
@@ -120,9 +172,13 @@ class ChessBoard(QGraphicsView):
 
 
 
-        if self.is_white_view:
-            return self.columns_letters[column] + str(self.rows_numbers[7 - row])
-        return self.columns_letters[7 - column] + str(self.rows_numbers[row])
+        try:
+            if self.is_white_view:
+                return self.columns_letters[column] + str(self.rows_numbers[7 - row])
+            return self.columns_letters[7 - column] + str(self.rows_numbers[row])
+        except Exception as e:
+            print(e)
+            return ""
 
     def getLegalMovesFromSquare(self, square):
         result = []
@@ -318,6 +374,9 @@ class ChessBoard(QGraphicsView):
 
     def buildAndRenderBoard(self, custom_fen=""):
         self.gscene.clear()
+        
+        self.arrows_pos = []
+        self.arrows_instances_dict = {}
 
         self.square_instances_dict = {}
         self.pieces_instances_dict = {}
