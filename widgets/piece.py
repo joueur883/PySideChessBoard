@@ -11,6 +11,8 @@ class GPiece:
 
 class GPiece(QGraphicsSvgItem):
     moveRequested = Signal(GPiece, int, int)
+    showLegalMoves = Signal(str)
+    hideLegalMoves = Signal()
 
     def __init__(self, piece_name: str, tile_size):
         super().__init__()
@@ -104,6 +106,8 @@ class GPiece(QGraphicsSvgItem):
         self.mouse_position = event.screenPos()
         self.centerOnMouseMove(event)
 
+        self.showLegalMoves.emit(self.data(Qt.ItemDataRole.UserRole))
+
         self.update()
 
         return super().mousePressEvent(event)
@@ -133,6 +137,8 @@ class GPiece(QGraphicsSvgItem):
                 QTimer.singleShot(0, lambda m=event.modifiers(): self.addAnnotation(m))
             self.update()
             return
+        
+        self.hideLegalMoves.emit()
 
         self.setZValue(2)
         self.dragging = False
@@ -276,3 +282,4 @@ class GPiece(QGraphicsSvgItem):
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.setPen(QPen(QColor("white"), self.hover_paint_size))
             painter.drawRect(self.boundingRect())
+

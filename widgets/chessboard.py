@@ -23,6 +23,8 @@ class ChessBoard(QGraphicsView):
 
         self.is_white_view = True
 
+        self.show_legal_moves = True
+
 
         self.white_square_color = QColor("#F0D9B5")
         self.black_square_color = QColor("#B88C67")
@@ -56,25 +58,32 @@ class ChessBoard(QGraphicsView):
 
 
 
-    def setFen(self, fen):
+    def setFen(self, fen: str) -> None:
         self.board.set_fen(fen)
         self.buildAndRenderBoard()
 
-    def resetBoard(self):
+    def resetBoard(self) -> None:
         self.board.reset()
         self.moves_history.clear()
         self.moves_history.append(self.board.fen())
 
         self.buildAndRenderBoard()
 
-    def setIsWhiteView(self, b):
+    def setIsWhiteView(self, b: bool) -> None:
         self.is_white_view = b
         self.buildAndRenderBoard()
 
-    def setMovesHistory(self, h):
+    def setTileSize(self, s: int) -> None:
+        self.tile_size = s
+        self.buildAndRenderBoard()
+
+    def setShowLegalMoves(self, s: bool) -> None:
+        self.show_legal_moves = s
+
+    def setMovesHistory(self, h: list[str]) -> None:
         self.moves_history = h
 
-    def setTimelinePosition(self, p):
+    def setTimelinePosition(self, p: int) -> None:
         self.timeline_pos = p
         self.reRenderLater(self.moves_history[self.timeline_pos])
 
@@ -180,7 +189,7 @@ class ChessBoard(QGraphicsView):
             print(e)
             return ""
 
-    def getLegalMovesFromSquare(self, square):
+    def getLegalMovesStrFromSquare(self, square) -> list[str]:
         result = []
         
         for legal_move in self.board.legal_moves:
@@ -344,7 +353,7 @@ class ChessBoard(QGraphicsView):
         piece_data = piece_instance.data(Qt.ItemDataRole.UserRole)
 
         piece_square = chess.parse_square(piece_data)
-        legal_moves_list = self.getLegalMovesFromSquare(piece_square)
+        legal_moves_list = self.getLegalMovesStrFromSquare(piece_square)
 
         if len(legal_moves_list) == 0:
             piece_instance.cancelPendingMove()
@@ -362,9 +371,30 @@ class ChessBoard(QGraphicsView):
         self.playMoveWithPiece(piece_instance, True, new_square_name)
         
 
+    def showLegalMovesFromSquare(self, square_coord):
+        if not self.show_legal_moves:
+            return
 
+        square = chess.parse_square(square_coord)
+        legal_moves = self.getLegalMovesStrFromSquare(square)
 
+        if len(legal_moves) == 0:
+            return
         
+        for legal_move in legal_moves:
+            if legal_move in self.square_instances_dict:
+                square_instance = self.square_instances_dict[legal_move]
+                square_instance.setIsLegalMove(True)
+
+    def hideLegalMoves(self):
+        if not self.show_legal_moves:
+            return
+
+        for square_coord, square in self.square_instances_dict.items():
+            square.setIsLegalMove(False)
+        
+
+
 
 
 
@@ -426,6 +456,8 @@ class ChessBoard(QGraphicsView):
                     self.gscene.addItem(piece)
 
                     piece.moveRequested.connect(self.playOrCancelMove)
+                    piece.showLegalMoves.connect(self.showLegalMovesFromSquare)
+                    piece.hideLegalMoves.connect(self.hideLegalMoves)
 
                     piece.setData(Qt.ItemDataRole.UserRole, tile_coord_str)
                     self.pieces_instances_dict[tile_coord_str] = piece

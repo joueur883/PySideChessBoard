@@ -1,18 +1,26 @@
 from PySide6.QtWidgets import QGraphicsRectItem
 from PySide6.QtGui import QPainter, Qt, QBrush, QColor, QMouseEvent
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Property, QObject, QPropertyAnimation, QTimer, QEasingCurve
 
-class GSquare(QGraphicsRectItem):
+class GSquare(QObject, QGraphicsRectItem):
     def __init__(self, color):
-        super().__init__()
+        QObject.__init__(self)
+        QGraphicsRectItem.__init__(self)
         
         self.color = color
+
         self.setPen(Qt.PenStyle.NoPen)
         self.setBrush(QBrush(color))
 
         self.annotation_color = 0
         self.hovering = False
         self.is_right_click = False
+
+        self.is_legal_move = False
+        self._legal_move_color = QColor(0, 0, 0, 0)
+        self.legal_move_color_anim = None
+
+        self.setCursor(Qt.CursorShape.ArrowCursor)
 
         self.setAcceptHoverEvents(True)
 
@@ -26,6 +34,18 @@ class GSquare(QGraphicsRectItem):
         self.is_right_click = False
 
         return super().mousePressEvent(event)
+
+    def setIsLegalMove(self, is_legal):
+        self.is_legal_move = is_legal
+
+        if is_legal:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.tweenLegalMoveColorTo(QColor(0, 0, 0, 50))
+        else:
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.tweenLegalMoveColorTo(QColor(0, 0, 0, 0))
+
+        self.update()
 
     def addAnnotation(self, modifiers):
         if not self.hovering:
@@ -63,8 +83,30 @@ class GSquare(QGraphicsRectItem):
             QTimer.singleShot(0, lambda m=event.modifiers(): self.addAnnotation(m))
         return super().mouseReleaseEvent(event)
 
+    
+    def getLegalMoveColor(self):
+        return self._legal_move_color
+    
+    def setLegalMoveColor(self, c):
+        self._legal_move_color = c
+        self.update()
+
+    def tweenLegalMoveColorTo(self, color):
+        self.legal_move_color_anim = QPropertyAnimation(self, b"legalMoveColorP")
+        self.legal_move_color_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        self.legal_move_color_anim.setDuration(150)
+
+        self.legal_move_color_anim.setStartValue(self._legal_move_color)
+        self.legal_move_color_anim.setEndValue(color)
+
+        self.legal_move_color_anim.start()
+
+    legalMoveColorP = Property(QColor, getLegalMoveColor, setLegalMoveColor)
+
     def paint(self, painter: QPainter, option, widget):
         super().paint(painter, option, widget)
+
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         if self.annotation_color != 0:
             color = QColor("#e35d5b")
@@ -84,3 +126,9 @@ class GSquare(QGraphicsRectItem):
             painter.setBrush(QBrush(color))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRect(self.boundingRect())
+
+        if self.is_legal_move or self._legal_move_color != QColor(0, 0, 0, 0):
+            painter.setBrush(QBrush(self._legal_move_color))
+            painter.setPen(Qt.PenStyle.NoPen)
+
+            painter.drawEllipse(self.boundingRect())
