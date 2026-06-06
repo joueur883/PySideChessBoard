@@ -1,15 +1,24 @@
 Metadata-Version: 2.4
 Name: pyside6-chessboard
-Version: 1.0.0
+Version: 1.0.1
 Summary: An extension for PySide6 that adds a chessboard
 Requires-Python: >=3.0
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: PySide6>=6.0
+Requires-Dist: chess
 Dynamic: license-file
 
 # PySideChessBoard
 A chess board widget for PySide6, similar to chessboard.js but for PySide.
+
+## Features
+
+Set board FEN\
+Moves history (navigate with arrows)\
+Legal moves highlighting\
+Square highlighting (red, green, yellow, blue)\
+Draw arrows
 
 ## Preview
 ![Preview](/preview.png)
