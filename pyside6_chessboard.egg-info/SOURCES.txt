@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+PySide6_ChessBoard/arrow.py
+PySide6_ChessBoard/chessboard.py
+PySide6_ChessBoard/piece.py
+PySide6_ChessBoard/square.py
+pyside6_chessboard.egg-info/PKG-INFO
+pyside6_chessboard.egg-info/SOURCES.txt
+pyside6_chessboard.egg-info/dependency_links.txt
+pyside6_chessboard.egg-info/requires.txt
+pyside6_chessboard.egg-info/top_level.txt

@@ -6,6 +6,9 @@ from PySide6.QtSvg import QSvgRenderer
 
 from PySide6.QtCore import QPoint, QPointF, QTimer, Qt, QRectF, QPropertyAnimation, QEasingCurve, Property, Signal
 
+import os
+import pathlib
+
 class GPiece:
     pass
 
@@ -17,13 +20,16 @@ class GPiece(QGraphicsSvgItem):
     def __init__(self, piece_name: str, tile_size):
         super().__init__()
 
+        self.pieces_icon_path = pathlib.Path(os.path.abspath(__file__))
+        self.pieces_icon_path = str(self.pieces_icon_path.parent / "pieces")
+
         self.tile_size = tile_size
 
         self.piece_type: str = piece_name
         
         self.color = self.piece_type[self.piece_type.index("_") + 1:]
 
-        self._renderer = QSvgRenderer(f"widgets/pieces/{piece_name}.svg")
+        self._renderer = QSvgRenderer(f"{self.pieces_icon_path}/{piece_name}.svg")
         self.setSharedRenderer(self._renderer)
 
         self.hovering = False
@@ -56,7 +62,7 @@ class GPiece(QGraphicsSvgItem):
 
     def setPieceType(self, new_type):
         self.piece_type = new_type
-        self._renderer = QSvgRenderer(f"widgets/pieces/{new_type}.svg")
+        self._renderer = QSvgRenderer(f"{os.path.abspath(__file__)}/pieces/{new_type}.svg")
         self.setSharedRenderer(self._renderer)
         self.update()
 
