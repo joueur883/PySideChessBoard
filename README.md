@@ -1,6 +1,14 @@
 # PySideChessBoard
 A chess board widget for PySide6, similar to chessboard.js but for PySide.
 
+## Installation
+```bash
+pip install pyside6-chessboard
+```
+
+## Documentation
+See [documentation](documentation)
+
 ## Features
 
 Set board FEN\
