@@ -2,9 +2,12 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import QColor, QAction, QIcon, QKeyEvent
 from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, QSize, QTimer, Qt
 
-from PySide6_ChessBoard.arrow import GArrow
-from PySide6_ChessBoard.piece import GPiece
-from PySide6_ChessBoard.square import GSquare
+from src.PySide6_ChessBoard.arrow import GArrow
+from src.PySide6_ChessBoard.piece import GPiece
+from src.PySide6_ChessBoard.square import GSquare
+
+import pathlib
+import os
 
 import chess
 import chess.engine
@@ -17,6 +20,8 @@ class ChessBoard(QGraphicsView):
         self.gscene = QGraphicsScene(self)
         self.setScene(self.gscene)
 
+        self.pieces_icon_path = pathlib.Path(os.path.abspath(__file__))
+        self.pieces_icon_path = str(self.pieces_icon_path.parent / "pieces")
 
         self.tile_size = 80
 
@@ -224,26 +229,27 @@ class ChessBoard(QGraphicsView):
 
         if "pawn" in piece_instance.getPieceType() and new_square_name[1] in ("1", "8"): # Promotion
 
-            if piece_instance.getColor() == "white" and new_square_name[1] == "1":
+            piece_color = piece_instance.getColor()
+            if piece_color == "white" and new_square_name[1] == "1":
                 piece_instance.cancelPendingMove()
                 return
-            elif piece_instance.getColor() == "black" and new_square_name[1] == "8":
+            elif piece_color == "black" and new_square_name[1] == "8":
                 piece_instance.cancelPendingMove()
                 return
             
             menu = QMenu()
 
             queen_action = QAction("Queen")
-            queen_action.setIcon(QIcon("widgets/pieces/queen_white.svg"))
+            queen_action.setIcon(QIcon(f"{self.pieces_icon_path}/queen_{piece_color}.svg"))
 
             rook_action = QAction("Rook")
-            rook_action.setIcon(QIcon("widgets/pieces/rook_white.svg"))
+            rook_action.setIcon(QIcon(f"{self.pieces_icon_path}/rook_{piece_color}.svg"))
 
             bishop_action = QAction("Bishop")
-            bishop_action.setIcon(QIcon("widgets/pieces/bishop_white.svg"))
+            bishop_action.setIcon(QIcon(f"{self.pieces_icon_path}/bishop_{piece_color}.svg"))
 
             knight_action = QAction("Knight")
-            knight_action.setIcon(QIcon("widgets/pieces/knight_white.svg"))
+            knight_action.setIcon(QIcon(f"{self.pieces_icon_path}/knight_{piece_color}.svg"))
 
             menu.addAction(queen_action)
             menu.addAction(rook_action)
@@ -294,7 +300,6 @@ class ChessBoard(QGraphicsView):
                     del self.pieces_instances_dict[new_square_name]
 
         elif self.board.is_castling(move):
-            print("It's castling")
             
             if self.board.is_kingside_castling(move):
                 if turn == chess.WHITE:

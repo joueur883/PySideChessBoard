@@ -62,7 +62,7 @@ class GPiece(QGraphicsSvgItem):
 
     def setPieceType(self, new_type):
         self.piece_type = new_type
-        self._renderer = QSvgRenderer(f"{os.path.abspath(__file__)}/pieces/{new_type}.svg")
+        self._renderer = QSvgRenderer(f"{self.pieces_icon_path}/{new_type}.svg")
         self.setSharedRenderer(self._renderer)
         self.update()
 
@@ -136,6 +136,12 @@ class GPiece(QGraphicsSvgItem):
                 
                 case Qt.KeyboardModifier.AltModifier:
                     self.annotation_color = 4
+                
+            self.update()
+
+    def clearColorAnnotation(self):
+        self.annotation_color = 0
+        self.update()
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if not self.dragging:

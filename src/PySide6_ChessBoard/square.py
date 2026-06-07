@@ -1,6 +1,9 @@
 from PySide6.QtWidgets import QGraphicsRectItem
 from PySide6.QtGui import QPainter, Qt, QBrush, QColor, QMouseEvent
-from PySide6.QtCore import Property, QObject, QPropertyAnimation, QTimer, QEasingCurve
+from PySide6.QtCore import Property, QObject, QPropertyAnimation, QTimer, QEasingCurve, Signal
+
+class GSquare(QObject, QGraphicsRectItem):
+    pass
 
 class GSquare(QObject, QGraphicsRectItem):
     def __init__(self, color):
@@ -50,7 +53,7 @@ class GSquare(QObject, QGraphicsRectItem):
     def addAnnotation(self, modifiers):
         if not self.hovering:
             return
-        
+
         match modifiers:
 
             case Qt.KeyboardModifier.NoModifier:
@@ -68,6 +71,10 @@ class GSquare(QObject, QGraphicsRectItem):
             case Qt.KeyboardModifier.AltModifier:
                 self.annotation_color = 4
 
+        self.update()
+
+    def clearColorAnnotation(self):
+        self.annotation_color = 0
         self.update()
 
     def hoverEnterEvent(self, event):
