@@ -84,8 +84,14 @@ class GSquare(QObject, QGraphicsRectItem):
 
         self.update()
 
+    def setAnnotationColor(self, c: int):
+        self.annotation_color = c
+        self.tweenAnnotationColorAlphaTo(200)
+        self.update()
+
     def clearColorAnnotation(self):
         self.annotation_color = 0
+        self.tweenAnnotationColorAlphaTo(0)
         self.update()
 
     def hoverEnterEvent(self, event):
