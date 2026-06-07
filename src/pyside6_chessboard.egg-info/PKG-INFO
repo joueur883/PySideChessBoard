@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pyside6-chessboard
-Version: 1.0.5
+Version: 1.0.7
 Summary: An extension for PySide6 that adds a chessboard
 Requires-Python: >=3.0
 Description-Content-Type: text/markdown
@@ -22,6 +22,8 @@ See [documentation](documentation)
 
 ## Features
 
+Promotion\
+Castling\
 Set board FEN\
 Moves history (navigate with arrows)\
 Legal moves highlighting\

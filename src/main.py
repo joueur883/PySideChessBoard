@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from src.PySide6_ChessBoard.chessboard import ChessBoard
+from PySide6_ChessBoard.chessboard import ChessBoard
 
 app = QApplication()
 

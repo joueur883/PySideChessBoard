@@ -1,6 +1,6 @@
 [project]
 name = "pyside6-chessboard"
-version = "1.0.5"
+version = "1.0.7"
 description = "An extension for PySide6 that adds a chessboard"
 readme = "README.md"
 requires-python = ">=3.0"

@@ -2,9 +2,9 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import QColor, QAction, QIcon, QKeyEvent
 from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, QSize, QTimer, Qt
 
-from src.PySide6_ChessBoard.arrow import GArrow
-from src.PySide6_ChessBoard.piece import GPiece
-from src.PySide6_ChessBoard.square import GSquare
+from PySide6_ChessBoard.arrow import GArrow
+from PySide6_ChessBoard.piece import GPiece
+from PySide6_ChessBoard.square import GSquare
 
 import pathlib
 import os
