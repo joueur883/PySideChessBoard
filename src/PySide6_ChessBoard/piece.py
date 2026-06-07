@@ -41,6 +41,9 @@ class GPiece(QGraphicsSvgItem):
         self._paint_size_anim = None
         self._drag_bg_color_anim = None
 
+        self._annotation_color_alpha = 0
+        self.annotation_color_alpha_anim = None
+
         self.in_check = False
 
         self.right_click = False
@@ -120,11 +123,13 @@ class GPiece(QGraphicsSvgItem):
     
     def addAnnotation(self, modifiers):
         if self.right_click and self.hovering:
+            added = True
             match modifiers:
 
                 case Qt.KeyboardModifier.NoModifier:
-                    if self.annotation_color != 0:
+                    if self.annotation_color != 0 and self.annotation_color == 1:
                         self.annotation_color = 0
+                        added = False
                     else:
                         self.annotation_color = 1
                 
@@ -137,6 +142,11 @@ class GPiece(QGraphicsSvgItem):
                 case Qt.KeyboardModifier.AltModifier:
                     self.annotation_color = 4
                 
+            if added:
+                self.tweenAnnotationColorAlphaTo(200)
+            else:
+                self.tweenAnnotationColorAlphaTo(0)
+
             self.update()
 
     def clearColorAnnotation(self):
@@ -214,6 +224,16 @@ class GPiece(QGraphicsSvgItem):
         self._drag_bg_color_anim.finished.connect(self._drag_bg_color_anim.deleteLater)
         self._drag_bg_color_anim.start()
 
+    def tweenAnnotationColorAlphaTo(self, alpha):
+        self.annotation_color_alpha_anim = QPropertyAnimation(self, b"annotationColorAlphaP")
+        self.annotation_color_alpha_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        self.annotation_color_alpha_anim.setDuration(150)
+
+        self.annotation_color_alpha_anim.setStartValue(self._annotation_color_alpha)
+        self.annotation_color_alpha_anim.setEndValue(alpha)
+
+        self.annotation_color_alpha_anim.start()
+
     def getHoverPaintSize(self):
         return self.hover_paint_size
     
@@ -228,8 +248,16 @@ class GPiece(QGraphicsSvgItem):
         self.drag_bg_color = c
         self.update()
 
+    def getAnnotationColorAlpha(self):
+        return self._annotation_color_alpha
+    
+    def setAnnotationColorAlpha(self, a):
+        self._annotation_color_alpha = a
+        self.update()
+
     hoverPenSizeProperty = Property(float, getHoverPaintSize, setHoverPaintSize)
     dragBgColorProperty = Property(QColor, getDragBgColor, setDragBgColor)
+    annotationColorAlphaP = Property(int, getAnnotationColorAlpha, setAnnotationColorAlpha)
 
 
 
@@ -255,7 +283,7 @@ class GPiece(QGraphicsSvgItem):
             if self.dragging:
                 paint_hover = False
 
-        if self.annotation_color != 0:
+        if self.annotation_color != 0 or self._annotation_color_alpha > 5:
             color = QColor("#e35d5b")
 
             match self.annotation_color:
@@ -268,7 +296,7 @@ class GPiece(QGraphicsSvgItem):
                 case 4:
                     color = QColor("#49a4e6")
 
-            color.setAlpha(200)
+            color.setAlpha(self._annotation_color_alpha)
 
             painter.setBrush(QBrush(color))
             painter.setPen(Qt.PenStyle.NoPen)

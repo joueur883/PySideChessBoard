@@ -23,6 +23,9 @@ class GSquare(QObject, QGraphicsRectItem):
         self._legal_move_color = QColor(0, 0, 0, 0)
         self.legal_move_color_anim = None
 
+        self._annotation_color_alpha = 0
+        self.annotation_color_alpha_anim = None
+
         self.setCursor(Qt.CursorShape.ArrowCursor)
 
         self.setAcceptHoverEvents(True)
@@ -54,11 +57,14 @@ class GSquare(QObject, QGraphicsRectItem):
         if not self.hovering:
             return
 
+        added = True
+
         match modifiers:
 
             case Qt.KeyboardModifier.NoModifier:
-                if self.annotation_color != 0:
+                if self.annotation_color != 0 and self.annotation_color == 1:
                     self.annotation_color = 0
+                    added = False
                 else:
                     self.annotation_color = 1
                 
@@ -70,6 +76,11 @@ class GSquare(QObject, QGraphicsRectItem):
                 
             case Qt.KeyboardModifier.AltModifier:
                 self.annotation_color = 4
+
+        if added:
+            self.tweenAnnotationColorAlphaTo(200)
+        else:
+            self.tweenAnnotationColorAlphaTo(0)
 
         self.update()
 
@@ -98,6 +109,13 @@ class GSquare(QObject, QGraphicsRectItem):
         self._legal_move_color = c
         self.update()
 
+    def getAnnotationColorAlpha(self):
+        return self._annotation_color_alpha
+    
+    def setAnnotationColorAlpha(self, a):
+        self._annotation_color_alpha = a
+        self.update()
+
     def tweenLegalMoveColorTo(self, color):
         self.legal_move_color_anim = QPropertyAnimation(self, b"legalMoveColorP")
         self.legal_move_color_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
@@ -108,14 +126,29 @@ class GSquare(QObject, QGraphicsRectItem):
 
         self.legal_move_color_anim.start()
 
+    def tweenAnnotationColorAlphaTo(self, alpha):
+        self.annotation_color_alpha_anim = QPropertyAnimation(self, b"annotationColorAlphaP")
+        self.annotation_color_alpha_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        self.annotation_color_alpha_anim.setDuration(150)
+
+        self.annotation_color_alpha_anim.setStartValue(self._annotation_color_alpha)
+        self.annotation_color_alpha_anim.setEndValue(alpha)
+
+        self.annotation_color_alpha_anim.start()
+
+
+
     legalMoveColorP = Property(QColor, getLegalMoveColor, setLegalMoveColor)
+    annotationColorAlphaP = Property(int, getAnnotationColorAlpha, setAnnotationColorAlpha)
+
+
 
     def paint(self, painter: QPainter, option, widget):
         super().paint(painter, option, widget)
 
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        if self.annotation_color != 0:
+        if self.annotation_color != 0 or self._annotation_color_alpha > 5:
             color = QColor("#e35d5b")
 
             match self.annotation_color:
@@ -128,7 +161,7 @@ class GSquare(QObject, QGraphicsRectItem):
                 case 4:
                     color = QColor("#49a4e6")
 
-            color.setAlpha(200)
+            color.setAlpha(self._annotation_color_alpha)
 
             painter.setBrush(QBrush(color))
             painter.setPen(Qt.PenStyle.NoPen)
