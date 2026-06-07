@@ -11,6 +11,8 @@ See [documentation](documentation)
 
 ## Features
 
+Promotion\
+Castling\
 Set board FEN\
 Moves history (navigate with arrows)\
 Legal moves highlighting\
